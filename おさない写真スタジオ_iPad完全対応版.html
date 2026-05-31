@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>おさない写真スタジオ 注文書</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:900px;margin:auto;padding:15px}
+.box{border:1px solid #ccc;border-radius:8px;padding:12px;margin-bottom:12px}
+label{display:block;padding:8px 0;font-size:18px}
+input[type=text],input[type=date]{width:100%;padding:10px;font-size:18px}
+.total{background:#f5f5f5;padding:15px;font-size:22px;font-weight:bold}
+canvas{border:1px solid #000;width:100%;height:180px;touch-action:none}
+button{padding:12px 18px;font-size:18px;margin:5px}
+@media print {.noprint{display:none}}
+</style>
+</head>
+<body>
+
+<h1>おさない写真スタジオ 注文書・見積書</h1>
+
+<div class="box">
+予約NO<br><input type="text"><br><br>
+撮影日<br><input type="date"><br><br>
+お客様名<br><input type="text">
+</div>
+
+<div class="box">
+<h2>撮影プラン</h2>
+
+<label><input class="price" type="checkbox" data-price="5000"> ベビー・100日参り ¥5,000</label>
+<label><input class="price" type="checkbox" data-price="1000"> 追加ベビー衣装 ¥1,000</label>
+
+<label><input class="price" type="checkbox" data-price="3000"> ハーフ・1歳バースデー ¥3,000</label>
+<label><input class="price" type="checkbox" data-price="1000"> 追加衣装 ¥1,000</label>
+
+<label><input class="price" type="checkbox" data-price="5000"> バースデー ¥5,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> バースデー追加衣装 ¥3,000</label>
+
+<label><input class="price" type="checkbox" data-price="5000"> 七五三 ¥5,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> 洋装追加 ¥3,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> ヘアーチェンジ ¥3,000</label>
+<label><input class="price" type="checkbox" data-price="5000"> 日本髪 ¥5,000</label>
+
+<label><input class="price" type="checkbox" data-price="5000"> 卒入学 ¥5,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> フォーマル衣装追加 ¥3,000</label>
+
+<label><input class="price" type="checkbox" data-price="3000"> KID記念 ¥3,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> KID衣装追加 ¥3,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> ヘアーセット ¥3,000</label>
+
+<label><input class="price" type="checkbox" data-price="5000"> 大人記念 ¥5,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> 家族写真 ¥3,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> 集合写真 ¥3,000</label>
+<label><input class="price" type="checkbox" data-price="3000"> 兄弟写真 ¥3,000</label>
+</div>
+
+<div class="total">
+小計：<span id="subtotal">0</span>円<br>
+消費税：<span id="tax">0</span>円<br>
+合計：<span id="grand">0</span>円
+</div>
+
+<div class="box">
+<h2>お客様サイン</h2>
+<canvas id="canvas"></canvas><br>
+<button class="noprint" onclick="clearCanvas()">サイン消去</button>
+</div>
+
+<button class="noprint" onclick="window.print()">印刷・PDF保存</button>
+
+<script>
+function calculate(){
+  var subtotal=0;
+  var checks=document.querySelectorAll('.price');
+  for(var i=0;i<checks.length;i++){
+    if(checks[i].checked){
+      subtotal += parseInt(checks[i].getAttribute('data-price'));
+    }
+  }
+  var tax=Math.round(subtotal*0.1);
+  var grand=subtotal+tax;
+
+  document.getElementById('subtotal').innerHTML=subtotal.toLocaleString();
+  document.getElementById('tax').innerHTML=tax.toLocaleString();
+  document.getElementById('grand').innerHTML=grand.toLocaleString();
+}
+
+var checks=document.querySelectorAll('.price');
+for(var i=0;i<checks.length;i++){
+  checks[i].addEventListener('change',calculate);
+}
+
+var canvas=document.getElementById('canvas');
+var ctx=canvas.getContext('2d');
+
+function resizeCanvas(){
+  canvas.width=canvas.offsetWidth;
+  canvas.height=180;
+}
+resizeCanvas();
+
+var drawing=false;
+
+function getPos(e){
+  var rect=canvas.getBoundingClientRect();
+  if(e.touches){
+    return {
+      x:e.touches[0].clientX-rect.left,
+      y:e.touches[0].clientY-rect.top
+    };
+  }
+  return {
+    x:e.clientX-rect.left,
+    y:e.clientY-rect.top
+  };
+}
+
+function startDraw(e){
+  drawing=true;
+  var p=getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y);
+}
+
+function drawMove(e){
+  if(!drawing) return;
+  e.preventDefault();
+  var p=getPos(e);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+}
+
+function endDraw(){
+  drawing=false;
+}
+
+canvas.addEventListener('mousedown',startDraw);
+canvas.addEventListener('mousemove',drawMove);
+canvas.addEventListener('mouseup',endDraw);
+
+canvas.addEventListener('touchstart',startDraw,{passive:false});
+canvas.addEventListener('touchmove',drawMove,{passive:false});
+canvas.addEventListener('touchend',endDraw);
+
+function clearCanvas(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+</script>
+
+</body>
+</html>
