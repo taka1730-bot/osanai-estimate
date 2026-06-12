@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio Osanai Ver3.2.3 iPad完全対応版</title>
+<style>
+body{font-family:sans-serif;max-width:1200px;margin:auto;padding:15px;background:#f5f5f5}
+.box{background:#fff;border:1px solid #ddd;border-radius:10px;padding:15px;margin-bottom:15px}
+label{display:block;margin:6px 0}
+input[type=text],input[type=date],input[type=number]{width:100%;padding:8px;box-sizing:border-box}
+h1,h2,h3{margin-top:0}
+.total{font-size:24px;font-weight:bold}
+canvas{border:1px solid #000;width:100%;height:220px;touch-action:none}
+#printArea{display:none}
+@media print{
+ body>*{display:none}
+ #printArea{display:block}
+}
+</style>
+</head>
+<body>
+
+<h1>Studio Osanai</h1>
+<h2>おさない写真スタジオ 撮影受付システム Ver3.1</h2>
+
+<div class="box">
+<h3>基本情報</h3>
+予約No<input id="reserveNo" type="text">
+撮影日<input id="shootDate" type="date">
+お客様名<input id="customerName" type="text">
+</div>
+
+<div class="box">
+<h3>メイン撮影プラン（複数選択可）</h3>
+
+<label><input class="plan" data-name="ベビー・100日参り" data-price="5000" type="checkbox"> ベビー・100日参り 5,000円</label>
+<label><input class="plan" data-name="ハーフ・1歳バースデー" data-price="3000" type="checkbox"> ハーフ・1歳バースデー 3,000円</label>
+<label><input class="plan" data-name="バースデー" data-price="5000" type="checkbox"> バースデー 5,000円</label>
+<label><input class="plan" data-name="七五三A" data-price="5000" type="checkbox"> 七五三A 5,000円</label>
+<label><input class="plan" data-name="七五三B" data-price="7000" type="checkbox"> 七五三B 7,000円</label>
+<label><input class="plan" data-name="卒入プラン" data-price="3000" type="checkbox"> 卒入プラン 3,000円</label>
+<label><input class="plan" data-name="カジュアル" data-price="3000" type="checkbox"> カジュアル 3,000円</label>
+<label><input class="plan" data-name="大人記念" data-price="5000" type="checkbox"> 大人記念 5,000円</label>
+<label><input class="plan" data-name="成人式" data-price="5000" type="checkbox"> 成人式 5,000円</label>
+<label><input class="plan" data-name="家族撮影" data-price="5000" type="checkbox"> 家族撮影 5,000円</label>
+<label><input class="plan" data-name="集合撮影" data-price="5000" type="checkbox"> 集合撮影 5,000円</label>
+<label><input class="plan" data-name="小卒袴お仕度撮影" data-price="15000" type="checkbox"> 小卒袴お仕度撮影 15,000円</label>
+
+</div>
+
+<div class="box">
+<h3>メイン追加オプション</h3>
+
+双子ベビー追加（1,000円）数量
+<input class="qty" data-name="双子ベビー追加" data-price="1000" type="number" min="0" value="0">
+
+主役ベビー追加（3,000円）数量
+<input class="qty" data-name="主役ベビー追加" data-price="3000" type="number" min="0" value="0">
+
+兄弟主役追加（3,000円）数量
+<input class="qty" data-name="兄弟主役追加" data-price="3000" type="number" min="0" value="0">
+
+兄弟レンタル衣装代（3,000円）数量
+<input class="qty" data-name="兄弟レンタル衣装代" data-price="3000" type="number" min="0" value="0">
+</div>
+
+<div class="box">
+<h3>単発オプション</h3>
+
+<label><input class="opt" data-name="兄弟一緒撮影追加" data-price="3000" type="checkbox"> 兄弟一緒撮影追加 3,000円</label>
+<label><input class="opt" data-name="家族撮影追加" data-price="3000" type="checkbox"> 家族撮影追加 3,000円</label>
+<label><input class="opt" data-name="ヘアーチェンジ追加" data-price="3000" type="checkbox"> ヘアーチェンジ追加 3,000円</label>
+<label><input class="opt" data-name="日本髪" data-price="5000" type="checkbox"> 日本髪 5,000円</label>
+<label><input class="opt" data-name="長帯" data-price="3000" type="checkbox"> 長帯 3,000円</label>
+<label><input class="opt" data-name="衣装借りずヘアーのみ" data-price="3000" type="checkbox"> 衣装借りずヘアーのみ 3,000円</label>
+<label><input class="opt" data-name="小卒男子袴着付け" data-price="5000" type="checkbox"> 小卒男子袴着付け 5,000円</label>
+<label><input class="opt" data-name="家族パターン追加" data-price="3000" type="checkbox"> 家族パターン追加 3,000円</label>
+
+</div>
+
+<div class="box">
+<h3>その他</h3>
+内容<input id="otherText" type="text">
+金額<input id="otherPrice" type="number" value="0">
+</div>
+
+<div class="box">
+<h3>選択内容一覧</h3>
+<div id="details"></div>
+</div>
+
+<div class="box">
+税抜価格：<span id="subtotal">0</span>円<br>
+消費税：<span id="tax">0</span>円<br>
+<div class="total">税込合計：<span id="grand">0</span>円</div>
+</div>
+
+<div class="box">
+<h3>サイン</h3>
+<canvas id="canvas"></canvas><br><br>
+<button onclick="clearCanvas()">サイン消去</button>
+<button onclick="window.print()">撮影内容確認書を印刷</button>
+</div>
+
+<div id="printArea">
+<h1>撮影内容確認書</h1>
+<div id="printInfo"></div>
+<hr>
+<div id="printDetails"></div>
+<hr>
+税抜価格：<span id="pSub"></span>円<br>
+消費税：<span id="pTax"></span>円<br>
+<h2>税込合計：<span id="pGrand"></span>円</h2>
+<div style="margin-top:20px"><h3>ご署名</h3><img id="signatureImg" style="max-width:100%;border:1px solid #000;"></div></div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+function calc(){
+ let total=0;
+ let txt='';
+
+ document.querySelectorAll('.plan:checked').forEach(x=>{
+   let p=Number(x.dataset.price||0);
+   total+=p;
+   txt += '【メイン撮影プラン】 '+x.dataset.name+' '+p.toLocaleString()+'円<br>';
+ });
+
+ document.querySelectorAll('.qty').forEach(x=>{
+   let q=Number(x.value||0);
+   if(q>0){
+      let unit=Number(x.dataset.price||0);
+      let sum=unit*q;
+      total+=sum;
+      txt += x.dataset.name+' '+unit.toLocaleString()+'円 × '+q+' = '+sum.toLocaleString()+'円<br>';
+   }
+ });
+
+ document.querySelectorAll('.opt:checked').forEach(x=>{
+   let p=Number(x.dataset.price||0);
+   total+=p;
+   txt += x.dataset.name+' '+p.toLocaleString()+'円<br>';
+ });
+
+ let other=Number(document.getElementById('otherPrice').value||0);
+ if(other>0){
+   total+=other;
+   txt += document.getElementById('otherText').value+' '+other.toLocaleString()+'円<br>';
+ }
+
+ let sub=Math.round(total/1.1);
+ let tax=total-sub;
+
+ document.getElementById('details').innerHTML=txt;
+ document.getElementById('grand').textContent=total.toLocaleString();
+ document.getElementById('subtotal').textContent=sub.toLocaleString();
+ document.getElementById('tax').textContent=tax.toLocaleString();
+
+ document.getElementById('printInfo').innerHTML =
+ '予約No：'+document.getElementById('reserveNo').value+'<br>'+
+ '撮影日：'+document.getElementById('shootDate').value+'<br>'+
+ 'お客様名：'+document.getElementById('customerName').value;
+
+ document.getElementById('printDetails').innerHTML=txt;
+ document.getElementById('pSub').textContent=sub.toLocaleString();
+ document.getElementById('pTax').textContent=tax.toLocaleString();
+ document.getElementById('pGrand').textContent=total.toLocaleString();
+
+ const sig=document.getElementById('signatureImg');
+ if(sig && canvas){
+   try{ sig.src=canvas.toDataURL('image/png'); }catch(e){}
+ }
+}
+
+document.addEventListener('input', calc);
+document.addEventListener('change', calc);
+
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+
+function resizeCanvas(){
+ const rect=canvas.getBoundingClientRect();
+ canvas.width=Math.max(rect.width,300);
+ canvas.height=220;
+
+ ctx.lineWidth=2;
+ ctx.lineCap='round';
+ ctx.lineJoin='round';
+}
+resizeCanvas();
+
+let drawing=false;
+
+function getPos(e){
+ const rect=canvas.getBoundingClientRect();
+
+ if(e.touches && e.touches.length){
+   return {
+      x:e.touches[0].clientX-rect.left,
+      y:e.touches[0].clientY-rect.top
+   };
+ }
+
+ return {
+   x:e.clientX-rect.left,
+   y:e.clientY-rect.top
+ };
+}
+
+function startDraw(e){
+ drawing=true;
+ const p=getPos(e);
+ ctx.beginPath();
+ ctx.moveTo(p.x,p.y);
+ if(e.cancelable) e.preventDefault();
+}
+
+function moveDraw(e){
+ if(!drawing) return;
+ const p=getPos(e);
+ ctx.lineTo(p.x,p.y);
+ ctx.stroke();
+ if(e.cancelable) e.preventDefault();
+}
+
+function endDraw(){
+ drawing=false;
+}
+
+canvas.addEventListener('pointerdown',startDraw);
+canvas.addEventListener('pointermove',moveDraw);
+canvas.addEventListener('pointerup',endDraw);
+canvas.addEventListener('pointerleave',endDraw);
+
+canvas.addEventListener('touchstart',startDraw,{passive:false});
+canvas.addEventListener('touchmove',moveDraw,{passive:false});
+canvas.addEventListener('touchend',endDraw);
+
+canvas.addEventListener('mousedown',startDraw);
+canvas.addEventListener('mousemove',moveDraw);
+canvas.addEventListener('mouseup',endDraw);
+
+window.clearCanvas=function(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+};
+
+window.preparePrint=function(){
+ const sig=document.getElementById('signatureImg');
+ if(sig){
+   sig.src=canvas.toDataURL('image/png');
+ }
+ calc();
+};
+
+const btn=[...document.querySelectorAll('button')].find(b=>b.textContent.includes('印刷'));
+if(btn){
+ btn.onclick=function(){
+   preparePrint();
+   window.print();
+ };
+}
+
+calc();
+});
+</script>
+
+
+</body>
+</html>
